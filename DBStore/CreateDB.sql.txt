@@ -1,0 +1,97 @@
+use master
+go
+
+
+CREATE DATABASE TestDB;
+go
+
+SET ANSI_PADDING OFF;
+
+use TestDB  
+go
+
+
+Create TYPE UID from nvarchar(64) NOT NULL
+go 
+Create TYPE NameType from nvarchar(64) NOT NULL
+go 
+
+CREATE TABLE Image ( 
+	ID int IDENTITY,
+	InstanceUID UID UNIQUE,
+	SeriesInstanceUID UID,
+	Modality NameType,
+	FileLocation varchar(64) NOT NULL
+
+	CONSTRAINT [PK_Image] PRIMARY KEY ([Id])
+)
+go
+
+
+create table Users ( 
+	ID int identity not null,
+	UserName NameType,
+	LastName varchar(64) null,
+	FirstName varchar(64) null,
+	LoginPassWord varchar(64) null
+
+	CONSTRAINT [PK_Users] PRIMARY KEY ([ID])
+)
+go
+
+create table MeasurementType ( 
+	ID int IDENTITY not null,
+	Name NameType UNIQUE,
+
+	CONSTRAINT [PK_MeasurementType] PRIMARY KEY ([ID])
+)
+go 
+
+create table UserMeasurementType (
+	UserID int FOREIGN KEY REFERENCES Users(ID),
+	MeasurementTypeID int FOREIGN KEY REFERENCES MeasurementType(ID),
+
+	CONSTRAINT [PK_UserMeasurementType] PRIMARY KEY (UserID, MeasurementTypeID)
+)
+go
+
+
+create table AnatomicalFeature ( 
+	ID int IDENTITY not null,
+	Name NameType UNIQUE,
+
+	CONSTRAINT [PK_AnatomicalFeature] PRIMARY KEY ([ID])
+)
+go
+
+create table MeasurementTypeAnatomicalFeature (
+	AnatomicalFeatureID int FOREIGN KEY REFERENCES AnatomicalFeature(ID),
+	MeasurementTypeID int FOREIGN KEY REFERENCES MeasurementType(ID),
+	CONSTRAINT [PK_MeasurementTypeAnatomicalFeature] PRIMARY KEY (AnatomicalFeatureID, MeasurementTypeID)
+)
+go
+
+create table Measurements (
+    ID int IDENTITY not null,
+	ImageID int FOREIGN KEY REFERENCES Image(ID),
+	AnatomicalFeatureID int FOREIGN KEY REFERENCES AnatomicalFeature(ID),
+	MeasurementTypeID int FOREIGN KEY REFERENCES MeasurementType(ID),
+	FloatValue float null,
+	MeasurementText varchar(max) null
+
+	CONSTRAINT [PK_Measurements] PRIMARY KEY (ID)
+)
+go
+
+create table MeasurementAuditTrail(
+    ID int IDENTITY not null,
+	MeasurementID int FOREIGN KEY REFERENCES Measurements(ID),
+	UserID int FOREIGN KEY REFERENCES Users(ID),
+	TimeStamp datetime not null,
+	Action varchar(200) null,
+	Intent varchar(200) null
+
+	CONSTRAINT [PK_MeasurementAuditTrail] PRIMARY KEY (ID)
+)
+go
+
